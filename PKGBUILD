@@ -1,0 +1,63 @@
+# U-Boot: Raspberry Pi
+# Maintainer: Kevin Mihelich <kevin@archlinuxarm.org>
+
+buildarch=12
+
+pkgname=uboot-raspberrypi
+pkgver=2017.09
+pkgrel=1
+pkgdesc="U-Boot for Raspberry Pi"
+arch=('armv7h' 'aarch64')
+url='http://www.denx.de/wiki/U-Boot/WebHome'
+license=('GPL')
+backup=('boot/boot.txt' 'boot/boot.scr' 'boot/config.txt')
+makedepends=('bc' 'dtc' 'git')
+conflicts_armv7h=('linux-raspberrypi')
+source=("ftp://ftp.denx.de/pub/u-boot/u-boot-${pkgver/rc/-rc}.tar.bz2"
+        '0001-arch-linux-arm-modifications.patch'
+        'boot.txt.v2'
+        'boot.txt.v3'
+        'mkscr')
+md5sums=('9f7eb7db4530996a28e86f38f3b3e66f'
+         'f8ae1ac4c0bd70712a7cb36967ad35fb'
+         '69e883f0b8d1686b32bdf79684623f06'
+         'be8abe44b86d63428d7ac3acc64ee3bf'
+         '021623a04afd29ac3f368977140cfbfd')
+
+prepare() {
+  cd u-boot-${pkgver/rc/-rc}
+
+  git apply ../0001-arch-linux-arm-modifications.patch
+}
+
+build() {
+  cd u-boot-${pkgver/rc/-rc}
+
+  unset CFLAGS
+  unset CXXFLAGS
+  unset CPPFLAGS
+
+  make distclean
+  [[ $CARCH == "armv7h" ]] && make rpi_2_config
+  [[ $CARCH == "aarch64" ]] && make rpi_3_config
+  echo 'CONFIG_IDENT_STRING=" Arch Linux ARM"' >> .config
+  make EXTRAVERSION=-${pkgrel}
+}
+
+package() {
+  cd u-boot-${pkgver/rc/-rc}
+
+  mkdir -p "${pkgdir}"/boot
+
+  if [[ $CARCH == "armv7h" ]]; then
+    cp u-boot.bin ${pkgdir}/boot/kernel7.img
+    cp ../boot.txt.v2 ../boot.txt
+  elif [[ $CARCH == "aarch64" ]]; then
+    cp u-boot.bin ${pkgdir}/boot/kernel8.img
+    cp ../boot.txt.v3 ../boot.txt
+    echo "enable_uart=1" > ${pkgdir}/boot/config.txt
+  fi
+
+  tools/mkimage -A arm -O linux -T script -C none -n "U-Boot boot script" -d ../boot.txt "${pkgdir}"/boot/boot.scr
+  cp ../{boot.txt,mkscr} "${pkgdir}"/boot
+}
