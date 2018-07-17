@@ -1,16 +1,16 @@
 # After modifying, run ./mkscr
 
-# Set root partition to the second partition of boot device
-part uuid ${devtype} ${devnum}:2 uuid
+run mender_setup;
 
-setenv bootargs console=ttyAMA0,115200 root=PARTUUID=${uuid} rw rootwait smsc95xx.macaddr=${usbethaddr}
+setenv bootargs earlyprintk console=ttyAMA0,115200 console=tty0 root=${mender_kernel_root} rootfstype=ext4 rw rootwait
 
-if load ${devtype} ${devnum}:${bootpart} ${kernel_addr_r} /zImage; then
-  if load ${devtype} ${devnum}:${bootpart} ${fdt_addr_r} /dtbs/${fdtfile}; then
-    if load ${devtype} ${devnum}:${bootpart} ${ramdisk_addr_r} /initramfs-linux.img; then
-      bootz ${kernel_addr_r} ${ramdisk_addr_r}:${filesize} ${fdt_addr_r};
-    else
-      bootz ${kernel_addr_r} - ${fdt_addr_r};
-    fi;
+if ext4load ${mender_uboot_root} ${kernel_addr_r} /boot/kernel7.img; then
+  if ext4load ${mender_uboot_root} ${ramdisk_addr_r} /boot/initramfs-linux.img; then
+    bootz ${kernel_addr_r} ${ramdisk_addr_r}:${filesize} ${fdt_addr};
+    run mender_try_to_recover;
+  else
+    bootz ${kernel_addr_r} - ${fdt_addr};
+    run mender_try_to_recover;
   fi;
 fi
+
