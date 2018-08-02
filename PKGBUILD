@@ -5,7 +5,7 @@ buildarch=12
 
 pkgname=uboot-ropieee-pi3
 pkgver=2018.07
-pkgrel=8
+pkgrel=10
 pkgdesc="U-Boot for Raspberry Pi"
 arch=('armv7h')
 url='http://www.denx.de/wiki/U-Boot/WebHome'
@@ -33,7 +33,7 @@ md5sums=('2b8eaa30dd118b29889669070da22bb0'
          '1d33d038111fe551a9dc5f9a8e25affd'
          '315c82ddf099db367c8c510acfff51e4'
          'be8abe44b86d63428d7ac3acc64ee3bf'
-         '7205ecf804e56bbd9330a20a771da3f1'
+         '065b382b171f9ceea93cc7a902a41aa9'
          '021623a04afd29ac3f368977140cfbfd')
 
 prepare() {
@@ -79,6 +79,10 @@ build() {
   echo '# CONFIG_BOOTCOUNT_I2C is not set'     >> .config
   echo '# CONFIG_CMD_BOOTCOUNT is not set'     >> .config
   echo 'CONFIG_ENV_SIZE=0x4000'                >> .config
+
+  # 20180802: experimental, let's see if we can make it work without the env file
+  echo 'CONFIG_ENV_IS_IN_MMC=y'                >> .config
+  echo '# CONFIG_ENV_IS_IN_FAT is not set'     >> .config
 
   make EXTRAVERSION=-${pkgrel}
   make envtools EXTRAVERSION=-${pkgrel}
