@@ -2,7 +2,9 @@
 
 run mender_setup;
 
-setenv bootargs earlyprintk console=ttyAMA0,115200 console=tty0 root=${mender_kernel_root} rootfstype=ext4 rw rootwait
+# depending if we want to have a serial console (for U-boot itself for example), you need to use the first bootargs
+#setenv bootargs earlyprintk console=ttyAMA0,115200 console=tty0 root=${mender_kernel_root} rootfstype=ext4 rw rootwait
+setenv bootargs earlyprintk console=tty0 selinux=0 plymouth.enable=0 smsc95xx.turbo_mode=N dwc_otg.lpm_enable=0 fsck.repair=yes consoleblank=0 elevator=noop dwc_otg.microframe_schedule=1 dwc_otg.dma_enable=1 dwc_otg.dma_burst_size=256 root=${mender_kernel_root} rootfstype=ext4 rw rootwait
 
 if ext4load ${mender_uboot_root} ${kernel_addr_r} /boot/kernel7.img; then
   if ext4load ${mender_uboot_root} ${ramdisk_addr_r} /boot/initramfs-linux.img; then
