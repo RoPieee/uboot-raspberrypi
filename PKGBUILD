@@ -5,7 +5,7 @@ buildarch=12
 
 pkgname=uboot-ropieee-pi3
 pkgver=2018.07
-pkgrel=10
+pkgrel=11
 pkgdesc="U-Boot for Raspberry Pi"
 arch=('armv7h')
 url='http://www.denx.de/wiki/U-Boot/WebHome'
@@ -114,5 +114,5 @@ package() {
   install -m644 doc/{mkimage,kwboot}.1 ${pkgdir}/usr/share/man/man1
 
   # finally create the env file
-  dd if=/dev/zero of=${pkgdir}/uboot/uboot.env bs=18384 count=1
+  #dd if=/dev/zero of=${pkgdir}/uboot/uboot.env bs=18384 count=1
 }
